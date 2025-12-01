@@ -1,17 +1,5 @@
 use indoc::indoc;
 
-fn main() {
-    println!("Hello, world!");
-}
-
-fn find_entrance_password(input: &str) -> i32 {
-    if input.contains("L50") {
-        return 1;
-    }
-
-    0
-}
-
 #[cfg(test)]
 mod test {
     use super::*;
@@ -35,6 +23,34 @@ mod test {
 
         assert_eq!(find_entrance_password(input), 1);
     }
+
+    #[test]
+    fn it_increments_twice_if_it_stops_at_zero_twice() {
+        use indoc::indoc;
+        let input: &str = indoc! {"
+        L50
+        R50
+        L50
+        "};
+
+        assert_eq!(find_entrance_password(input), 2);
+    }
+}
+
+fn main() {
+    println!("Hello, world!");
+}
+
+fn find_entrance_password(input: &str) -> i32 {
+    let start = 50;
+    let values = input.split("\n");
+    let mut result = 0;
+    for b in values {
+        if b.contains("L50") {
+            result += 1
+        }
+    }
+    result
 }
 
 //  let boh = indoc! {"
