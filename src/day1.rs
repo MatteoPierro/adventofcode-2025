@@ -11,7 +11,7 @@ mod test {
         L68
         "};
 
-        assert_eq!(find_entrance_password(input), 0);
+        assert_eq!(find_entrance_password(input).0, 0);
     }
 
     #[test]
@@ -20,7 +20,7 @@ mod test {
         L50
         "};
 
-        assert_eq!(find_entrance_password(input), 1);
+        assert_eq!(find_entrance_password(input).0, 1);
     }
 
     #[test]
@@ -31,7 +31,7 @@ mod test {
         L50
         "};
 
-        assert_eq!(find_entrance_password(input), 2);
+        assert_eq!(find_entrance_password(input).0, 2);
     }
 
     #[test]
@@ -48,7 +48,7 @@ mod test {
         R14
         L82
         "};
-        assert_eq!(find_entrance_password(input), 3);
+        assert_eq!(find_entrance_password(input), (3, 6));
     }
 }
 
@@ -60,13 +60,15 @@ fn main() {
     )
     .expect("input");
 
-    println!("first part: {}", find_entrance_password(&input));
+    let result = find_entrance_password(&input);
+    println!("first part: {}; second part {}", result.0, result.1);
 }
 
-fn find_entrance_password(input: &str) -> i32 {
+fn find_entrance_password(input: &str) -> (i32, i32) {
     let mut position = 50;
     let values = input.split("\n");
-    let mut result = 0;
+    let mut first_part_result = 0;
+    let mut second_part_result = 0;
     for b in values {
         if b.is_empty() {
             continue;
@@ -81,17 +83,34 @@ fn find_entrance_password(input: &str) -> i32 {
 
         match direction {
             'L' => {
+                let mut next_position = position - step;
+                while next_position <= 0 {
+                    next_position += 100;
+                    second_part_result += 1;
+                }
+
+                if position == 0 {
+                    second_part_result -= 1;
+                }
+
                 position = (position - step).rem_euclid(100);
             }
             'R' => {
+                let mut next_position = position + step;
+                while next_position >= 100 {
+                    next_position -= 100;
+                    second_part_result += 1;
+                }
+
                 position = (position + step).rem_euclid(100);
             }
             _ => todo!(),
         }
 
         if position == 0 {
-            result += 1
+            first_part_result += 1
         }
     }
-    result
+
+    (first_part_result, second_part_result)
 }
