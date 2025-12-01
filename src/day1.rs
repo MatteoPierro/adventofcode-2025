@@ -1,3 +1,5 @@
+use std::{env, fs};
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -51,7 +53,14 @@ mod test {
 }
 
 fn main() {
-    println!("Hello, world!");
+    let input = fs::read_to_string(
+        env::args()
+            .nth(1)
+            .expect("Please provide input as first argument"),
+    )
+    .expect("input");
+
+    println!("first part: {}", find_entrance_password(&input));
 }
 
 fn find_entrance_password(input: &str) -> i32 {

@@ -6,3 +6,7 @@ edition = "2024"
 [dependencies]
 indoc = "2.0.7"
 regex = "1.12.2"
+
+[[bin]]
+name = "day1"
+path = "src/day1.rs"
