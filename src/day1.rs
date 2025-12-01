@@ -1,3 +1,4 @@
+use std::ops::Div;
 use std::{env, fs};
 
 #[cfg(test)]
@@ -83,28 +84,27 @@ fn find_entrance_password(input: &str) -> (i32, i32) {
 
         match direction {
             'L' => {
-                let mut next_position = position - step;
-                while next_position <= 0 {
-                    next_position += 100;
-                    second_part_result += 1;
-                }
-
                 if position == 0 {
                     second_part_result -= 1;
                 }
 
-                position = (position - step).rem_euclid(100);
-            }
-            'R' => {
-                let mut next_position = position + step;
-                while next_position >= 100 {
-                    next_position -= 100;
+                let walk = position - step;
+
+                second_part_result += (walk as f32).div(100f32).floor().abs() as i32;
+
+                position = walk.rem_euclid(100);
+
+                if position == 0 {
                     second_part_result += 1;
                 }
+            }
+            'R' => {
+                let next_position = position + step;
+                second_part_result += (next_position as f32).div(100f32).floor() as i32;
 
                 position = (position + step).rem_euclid(100);
             }
-            _ => todo!(),
+            _ => todo!("unknown direction"),
         }
 
         if position == 0 {
