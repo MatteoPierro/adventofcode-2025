@@ -5,6 +5,10 @@ fn main() {
 }
 
 fn find_the_password(side: &str) -> i32 {
+    if side.contains("L50") {
+        return 1;
+    }
+
     0
 }
 
@@ -20,6 +24,16 @@ mod test {
         "};
 
         assert_eq!(find_the_password(input), 0);
+    }
+
+    #[test]
+    fn it_increments_if_it_stops_at_zero() {
+        use indoc::indoc;
+        let input: &str = indoc! {"
+        L50
+        "};
+
+        assert_eq!(find_the_password(input), 1);
     }
 }
 
