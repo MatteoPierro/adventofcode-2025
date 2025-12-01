@@ -4,7 +4,7 @@ fn main() {
     println!("Hello, world!");
 }
 
-fn find_the_password(input: &str) -> i32 {
+fn find_entrance_password(input: &str) -> i32 {
     if input.contains("L50") {
         return 1;
     }
@@ -23,7 +23,7 @@ mod test {
         L68
         "};
 
-        assert_eq!(find_the_password(input), 0);
+        assert_eq!(find_entrance_password(input), 0);
     }
 
     #[test]
@@ -33,7 +33,7 @@ mod test {
         L50
         "};
 
-        assert_eq!(find_the_password(input), 1);
+        assert_eq!(find_entrance_password(input), 1);
     }
 }
 
