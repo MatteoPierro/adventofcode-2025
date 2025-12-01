@@ -4,8 +4,8 @@ fn main() {
     println!("Hello, world!");
 }
 
-fn find_the_password(side: &str) -> i32 {
-    if side.contains("L50") {
+fn find_the_password(input: &str) -> i32 {
+    if input.contains("L50") {
         return 1;
     }
 
