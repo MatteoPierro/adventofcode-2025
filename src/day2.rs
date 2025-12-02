@@ -4,11 +4,11 @@ mod test {
 
     #[test]
     fn given_an_invalid_range_sum_the_values() {
-        assert_eq!(something("11-22"), 33);
+        assert_eq!(sum_invalid_ids("11-22"), 33);
     }
 }
 
-fn something(input: &str) -> u128 {
+fn sum_invalid_ids(input: &str) -> u128 {
     33
 }
 
