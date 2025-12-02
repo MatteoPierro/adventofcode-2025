@@ -24,7 +24,16 @@ fn sum_invalid_ids(input: &str) -> u128 {
             .collect::<Vec<u128>>();
 
         for i in range[0]..=range[1] {
-            if i == 1010 || i == 99 || i == 11 || i == 22 {
+            let len = i.to_string().len() as u32;
+
+            if len.rem_euclid(2) != 0 {
+                continue;
+            }
+
+            let a = i / 10_u128.pow(len / 2_u32);
+            let b = i % 10_u128.pow(len / 2_u32);
+
+            if a == b {
                 result += i;
             }
         }
