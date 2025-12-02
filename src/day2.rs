@@ -1,3 +1,5 @@
+use std::{env, fs};
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -27,7 +29,7 @@ fn sum_invalid_ids(input: &str) -> u128 {
     for interval in input.split(',') {
         let range = interval
             .split('-')
-            .map(|v| v.parse().unwrap())
+            .map(|v| v.trim().parse().unwrap())
             .collect::<Vec<u128>>();
 
         for i in range[0]..=range[1] {
@@ -50,5 +52,13 @@ fn sum_invalid_ids(input: &str) -> u128 {
 }
 
 fn main() {
-    todo!()
+    let input = fs::read_to_string(
+        env::args()
+            .nth(1)
+            .expect("Please provide input as first argument"),
+    )
+    .expect("input");
+
+    let result = sum_invalid_ids(&input);
+    println!("result {result}")
 }
