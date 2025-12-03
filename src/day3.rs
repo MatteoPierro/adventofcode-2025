@@ -21,7 +21,7 @@ mod test {
             234234234234278
             818181911112111"};
 
-        assert_eq!(total_joltage(banks), 357);
+        assert_eq!(total_joltage(banks, find_maximum_joltage), 357);
     }
 
     #[test]
@@ -31,6 +31,21 @@ mod test {
         assert_eq!(something("234234234234278"), 434234234278);
         assert_eq!(something("818181911112111"), 888911112111);
     }
+}
+
+fn main() {
+    let input = fs::read_to_string(
+        env::args()
+            .nth(1)
+            .expect("Please provide input as first argument"),
+    )
+    .expect("input");
+
+    println!(
+        "first part: {}, second part: {}",
+        total_joltage(&input, find_maximum_joltage),
+        total_joltage(&input, something)
+    );
 }
 
 fn something(bank: &str) -> usize {
@@ -67,21 +82,10 @@ fn something_rec(digits_left: usize, batteries: &[usize], mut result: Vec<usize>
     unreachable!("should not reach here");
 }
 
-fn main() {
-    let input = fs::read_to_string(
-        env::args()
-            .nth(1)
-            .expect("Please provide input as first argument"),
-    )
-    .expect("input");
-
-    println!("result: {}", total_joltage(&input));
-}
-
-fn total_joltage(banks: &str) -> usize {
+fn total_joltage(banks: &str, maximum_joltage_finder: fn(&str) -> usize) -> usize {
     banks
         .lines()
-        .map(|line| find_maximum_joltage(line))
+        .map(|line| (maximum_joltage_finder)(line))
         .sum::<usize>()
 }
 
