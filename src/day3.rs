@@ -1,3 +1,5 @@
+use itertools::Itertools;
+
 fn main() {}
 
 #[cfg(test)]
@@ -9,6 +11,7 @@ mod test {
         assert_eq!(find_maximum_joltage("12345"), 45);
         assert_eq!(find_maximum_joltage("811111111111119"), 89);
         assert_eq!(find_maximum_joltage("987654321111111"), 98);
+        assert_eq!(find_maximum_joltage("818181911112111"), 92);
     }
 }
 
@@ -17,9 +20,20 @@ fn find_maximum_joltage(bank: &str) -> usize {
         .chars()
         .map(|c| c.to_digit(10).unwrap() as usize)
         .collect::<Vec<_>>();
-    if batteries[0] == 9 {
-        return 98;
+
+    let max_battery = batteries.iter().max().unwrap();
+    let (pos, _) = batteries
+        .iter()
+        .find_position(|x| *x == max_battery)
+        .unwrap();
+
+    if pos == batteries.len() - 1 {
+        let first = batteries[0..pos].iter().max().unwrap();
+
+        return first * 10 + max_battery;
     }
 
-    if bank.contains("8") { 89 } else { 45 }
+    let second = batteries[pos + 1..batteries.len()].iter().max().unwrap();
+
+    max_battery * 10 + second
 }
