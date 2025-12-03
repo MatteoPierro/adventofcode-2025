@@ -1,6 +1,5 @@
 use itertools::Itertools;
-
-fn main() {}
+use std::{env, fs};
 
 #[cfg(test)]
 mod test {
@@ -13,6 +12,35 @@ mod test {
         assert_eq!(find_maximum_joltage("987654321111111"), 98);
         assert_eq!(find_maximum_joltage("818181911112111"), 92);
     }
+
+    #[test]
+    fn it_calculates_the_total_joltage() {
+        let banks = indoc::indoc! {"
+            987654321111111
+            811111111111119
+            234234234234278
+            818181911112111"};
+
+        assert_eq!(total_joltage(banks), 357);
+    }
+}
+
+fn main() {
+    let input = fs::read_to_string(
+        env::args()
+            .nth(1)
+            .expect("Please provide input as first argument"),
+    )
+    .expect("input");
+
+    println!("result: {}", total_joltage(&input));
+}
+
+fn total_joltage(banks: &str) -> usize {
+    banks
+        .lines()
+        .map(|line| find_maximum_joltage(line))
+        .sum::<usize>()
 }
 
 fn find_maximum_joltage(bank: &str) -> usize {
