@@ -1,5 +1,5 @@
 use itertools::Itertools;
-use std::{env, fs};
+use std::{env, fs, result};
 
 #[cfg(test)]
 mod test {
@@ -23,6 +23,48 @@ mod test {
 
         assert_eq!(total_joltage(banks), 357);
     }
+
+    #[test]
+    fn test_something() {
+        assert_eq!(something("987654321111111"), 987654321111);
+        assert_eq!(something("811111111111119"), 811111111119);
+        assert_eq!(something("234234234234278"), 434234234278);
+        assert_eq!(something("818181911112111"), 888911112111);
+    }
+}
+
+fn something(bank: &str) -> usize {
+    let batteries = bank
+        .chars()
+        .map(|c| c.to_digit(10).unwrap() as usize)
+        .collect::<Vec<_>>();
+
+    something_rec(12, &batteries, vec![])
+}
+
+fn something_rec(digits_left: usize, batteries: &[usize], mut result: Vec<usize>) -> usize {
+    if digits_left == 0 {
+        return result.iter().enumerate().fold(0, |acc, (i, v)| {
+            acc + v * 10_usize.pow((result.len() - i - 1) as u32)
+        });
+    }
+
+    for battery in (1..=9).rev() {
+        let Some((pos, _)) = batteries.iter().find_position(|&x| *x == battery) else {
+            continue;
+        };
+
+        if batteries.len() - pos >= digits_left {
+            result.push(battery);
+            return something_rec(
+                digits_left - 1,
+                &batteries[pos + 1..batteries.len()],
+                result,
+            );
+        }
+    }
+
+    unreachable!("should not reach here");
 }
 
 fn main() {
