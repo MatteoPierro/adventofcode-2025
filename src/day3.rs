@@ -1,16 +1,21 @@
 use itertools::Itertools;
-use std::{env, fs, result};
+use std::{env, fs};
 
 #[cfg(test)]
 mod test {
     use super::*;
 
     #[test]
-    fn it_returns_the_largest_pair() {
-        assert_eq!(find_maximum_joltage("12345"), 45);
-        assert_eq!(find_maximum_joltage("811111111111119"), 89);
-        assert_eq!(find_maximum_joltage("987654321111111"), 98);
-        assert_eq!(find_maximum_joltage("818181911112111"), 92);
+    fn it_calculates_bank_joltage() {
+        assert_eq!(bank_joltage("12345", 2), 45);
+        assert_eq!(bank_joltage("811111111111119", 2), 89);
+        assert_eq!(bank_joltage("987654321111111", 2), 98);
+        assert_eq!(bank_joltage("818181911112111", 2), 92);
+
+        assert_eq!(bank_joltage("987654321111111", 12), 987654321111);
+        assert_eq!(bank_joltage("811111111111119", 12), 811111111119);
+        assert_eq!(bank_joltage("234234234234278", 12), 434234234278);
+        assert_eq!(bank_joltage("818181911112111", 12), 888911112111);
     }
 
     #[test]
@@ -21,15 +26,7 @@ mod test {
             234234234234278
             818181911112111"};
 
-        assert_eq!(total_joltage(banks, find_maximum_joltage), 357);
-    }
-
-    #[test]
-    fn test_something() {
-        assert_eq!(something("987654321111111"), 987654321111);
-        assert_eq!(something("811111111111119"), 811111111119);
-        assert_eq!(something("234234234234278"), 434234234278);
-        assert_eq!(something("818181911112111"), 888911112111);
+        assert_eq!(total_joltage(banks, 2), 357);
     }
 }
 
@@ -43,21 +40,28 @@ fn main() {
 
     println!(
         "first part: {}, second part: {}",
-        total_joltage(&input, find_maximum_joltage),
-        total_joltage(&input, something)
+        total_joltage(&input, 2),
+        total_joltage(&input, 12)
     );
 }
 
-fn something(bank: &str) -> usize {
+fn total_joltage(banks: &str, length: usize) -> usize {
+    banks
+        .lines()
+        .map(|bank| bank_joltage(bank, length))
+        .sum::<usize>()
+}
+
+fn bank_joltage(bank: &str, length: usize) -> usize {
     let batteries = bank
         .chars()
         .map(|c| c.to_digit(10).unwrap() as usize)
         .collect::<Vec<_>>();
 
-    something_rec(12, &batteries, vec![])
+    bank_joltage_rec(length, &batteries, vec![])
 }
 
-fn something_rec(digits_left: usize, batteries: &[usize], mut result: Vec<usize>) -> usize {
+fn bank_joltage_rec(digits_left: usize, batteries: &[usize], mut result: Vec<usize>) -> usize {
     if digits_left == 0 {
         return result.iter().enumerate().fold(0, |acc, (i, v)| {
             acc + v * 10_usize.pow((result.len() - i - 1) as u32)
@@ -71,7 +75,7 @@ fn something_rec(digits_left: usize, batteries: &[usize], mut result: Vec<usize>
 
         if batteries.len() - pos >= digits_left {
             result.push(battery);
-            return something_rec(
+            return bank_joltage_rec(
                 digits_left - 1,
                 &batteries[pos + 1..batteries.len()],
                 result,
@@ -80,34 +84,4 @@ fn something_rec(digits_left: usize, batteries: &[usize], mut result: Vec<usize>
     }
 
     unreachable!("should not reach here");
-}
-
-fn total_joltage(banks: &str, maximum_joltage_finder: fn(&str) -> usize) -> usize {
-    banks
-        .lines()
-        .map(|line| (maximum_joltage_finder)(line))
-        .sum::<usize>()
-}
-
-fn find_maximum_joltage(bank: &str) -> usize {
-    let batteries = bank
-        .chars()
-        .map(|c| c.to_digit(10).unwrap() as usize)
-        .collect::<Vec<_>>();
-
-    let max_battery = batteries.iter().max().unwrap();
-    let (pos, _) = batteries
-        .iter()
-        .find_position(|x| *x == max_battery)
-        .unwrap();
-
-    if pos == batteries.len() - 1 {
-        let first = batteries[0..pos].iter().max().unwrap();
-
-        return first * 10 + max_battery;
-    }
-
-    let second = batteries[pos + 1..batteries.len()].iter().max().unwrap();
-
-    max_battery * 10 + second
 }
