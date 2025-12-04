@@ -2,7 +2,7 @@ use std::{env, fs};
 
 #[cfg(test)]
 mod test {
-    use crate::find_number_of_forklifts_accessible;
+    use crate::{find_number_of_forklifts_accessible, find_total_removable_forklifts};
 
     #[test]
     fn it_works() {
@@ -18,17 +18,40 @@ mod test {
         .@@@@@@@@.
         @.@.@@@.@."};
 
-        assert_eq!(find_number_of_forklifts_accessible(input), 13)
+        assert_eq!(find_number_of_forklifts_accessible(input), 13);
+        assert_eq!(find_total_removable_forklifts(input), 43)
     }
 }
 
-fn find_number_of_forklifts_accessible(input: &str) -> i32 {
-    let mut result = 0;
-
-    let diagram = input
+fn find_total_removable_forklifts(input: &str) -> i32 {
+    let mut total_removed = 0;
+    let mut diagram = input
         .lines()
         .map(|line| line.chars().collect::<Vec<_>>())
         .collect::<Vec<_>>();
+
+    loop {
+        let removed = clean_diagram(&mut diagram);
+        if removed == 0 {
+            break;
+        }
+        total_removed += removed;
+    }
+
+    total_removed
+}
+
+fn find_number_of_forklifts_accessible(input: &str) -> i32 {
+    let mut diagram = input
+        .lines()
+        .map(|line| line.chars().collect::<Vec<_>>())
+        .collect::<Vec<_>>();
+
+    clean_diagram(&mut diagram)
+}
+
+fn clean_diagram(diagram: &mut Vec<Vec<char>>) -> i32 {
+    let mut result = Vec::new();
 
     let height = diagram.len();
     let width = diagram[0].len();
@@ -47,19 +70,19 @@ fn find_number_of_forklifts_accessible(input: &str) -> i32 {
             }
 
             if papers < 4 {
-                result += 1;
+                result.push((c, r));
             }
         }
     }
-    result
+
+    for (r, c) in result.iter() {
+        diagram[*c][*r] = '.';
+    }
+
+    result.len() as i32
 }
 
-fn neightbours_positions(
-    r: usize,
-    c: usize,
-    height: usize,
-    width: usize,
-) -> Vec<(usize, usize)> {
+fn neightbours_positions(r: usize, c: usize, height: usize, width: usize) -> Vec<(usize, usize)> {
     let mut result = Vec::new();
     [
         (-1, -1),
@@ -71,14 +94,14 @@ fn neightbours_positions(
         (1, 0),
         (1, 1),
     ]
-        .iter()
-        .for_each(|(dr, dc)| {
-            let new_r = r as isize + dr;
-            let new_c = c as isize + dc;
-            if new_r >= 0 && new_r < height as isize && new_c >= 0 && new_c < width as isize {
-                result.push((new_r as usize, new_c as usize));
-            }
-        });
+    .iter()
+    .for_each(|(dr, dc)| {
+        let new_r = r as isize + dr;
+        let new_c = c as isize + dc;
+        if new_r >= 0 && new_r < height as isize && new_c >= 0 && new_c < width as isize {
+            result.push((new_r as usize, new_c as usize));
+        }
+    });
     result
 }
 
@@ -90,5 +113,9 @@ fn main() {
     )
     .expect("input");
 
-    println!("result {}", find_number_of_forklifts_accessible(&input));
+    println!(
+        "part 1: {}, part 2: {}",
+        find_number_of_forklifts_accessible(&input),
+        find_total_removable_forklifts(&input)
+    );
 }
