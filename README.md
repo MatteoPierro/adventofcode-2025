@@ -4,3 +4,4 @@
 - [Day 2: Gift Shop](./src/day2.rs)
 - [Day 3: Lobby](./src/day3.rs)
 - [Day 4: Printing Department](./src/day4.rs)
+- [Day 5: Cafeteria](./src/day5.rs)
