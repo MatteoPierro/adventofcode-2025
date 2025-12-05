@@ -1,6 +1,6 @@
+use adventofcode_2025::read_input_from_file;
 use std::collections::HashSet;
 use std::str::Lines;
-use std::{env, fs};
 
 #[cfg(test)]
 mod tests {
@@ -113,12 +113,7 @@ fn parse_ranges(lines: &mut Lines) -> Vec<Range> {
 }
 
 fn main() {
-    let input = fs::read_to_string(
-        env::args()
-            .nth(1)
-            .expect("Please provide input as first argument"),
-    )
-    .expect("input");
+    let input = read_input_from_file();
 
     println!(
         "part 1: {}, part 2: {}",

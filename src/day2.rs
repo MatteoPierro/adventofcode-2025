@@ -1,4 +1,4 @@
-use std::{env, fs};
+use adventofcode_2025::read_input_from_file;
 
 #[cfg(test)]
 mod test {
@@ -87,12 +87,7 @@ fn sum_invalid_ids(input: &str) -> (u128, u128) {
 }
 
 fn main() {
-    let input = fs::read_to_string(
-        env::args()
-            .nth(1)
-            .expect("Please provide input as first argument"),
-    )
-    .expect("input");
+    let input = read_input_from_file();
 
     let (result, second) = sum_invalid_ids(&input);
     println!("result {result} second {second}")

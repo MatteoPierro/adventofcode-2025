@@ -1,4 +1,4 @@
-use std::{env, fs};
+use adventofcode_2025::read_input_from_file;
 
 #[cfg(test)]
 mod test {
@@ -106,12 +106,7 @@ fn neightbours_positions(r: usize, c: usize, height: usize, width: usize) -> Vec
 }
 
 fn main() {
-    let input = fs::read_to_string(
-        env::args()
-            .nth(1)
-            .expect("Please provide input as first argument"),
-    )
-    .expect("input");
+    let input = read_input_from_file();
 
     println!(
         "part 1: {}, part 2: {}",

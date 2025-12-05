@@ -1,5 +1,5 @@
+use adventofcode_2025::read_input_from_file;
 use itertools::Itertools;
-use std::{env, fs};
 
 #[cfg(test)]
 mod test {
@@ -31,12 +31,7 @@ mod test {
 }
 
 fn main() {
-    let input = fs::read_to_string(
-        env::args()
-            .nth(1)
-            .expect("Please provide input as first argument"),
-    )
-    .expect("input");
+    let input = read_input_from_file();
 
     println!(
         "first part: {}, second part: {}",
