@@ -58,32 +58,34 @@ fn visit_minifold_rec(
     minifold: &Vec<Vec<char>>,
     visited: &mut HashMap<Position, usize>,
 ) -> usize {
-    let (x, y) = current_position;
-    if y >= minifold.len() {
-        return 1;
-    }
     if visited.keys().contains(&current_position) {
         return visited[&current_position];
     }
 
-    let mut left_result = 1;
+    let (x, y) = current_position;
+
+    let mut left_number_of_different_timelines = 1;
     for next_y in (y + 2..minifold.len()).step_by(2) {
         if minifold[next_y][x - 1] == '^' {
-            left_result = visit_minifold_rec((x - 1, next_y), minifold, visited);
+            left_number_of_different_timelines =
+                visit_minifold_rec((x - 1, next_y), minifold, visited);
             break;
         }
     }
 
-    let mut right_result = 1;
+    let mut right_number_of_different_timelines = 1;
     for next_y in (y + 2..minifold.len()).step_by(2) {
         if x + 1 < minifold[next_y].len() && minifold[next_y][x + 1] == '^' {
-            right_result = visit_minifold_rec((x + 1, next_y), minifold, visited);
+            right_number_of_different_timelines =
+                visit_minifold_rec((x + 1, next_y), minifold, visited);
             break;
         }
     }
 
-    visited.insert(current_position, left_result + right_result);
-    left_result + right_result
+    let number_of_different_timelines =
+        left_number_of_different_timelines + right_number_of_different_timelines;
+    visited.insert(current_position, number_of_different_timelines);
+    number_of_different_timelines
 }
 
 type Position = (usize, usize);
