@@ -6,3 +6,4 @@
 - [Day 4: Printing Department](./src/day4.rs)
 - [Day 5: Cafeteria](./src/day5.rs)
 - [Day 6: Trash Compactor](./src/day6.rs)
+- [Day 7: Laboratories](./src/day7.rs)
