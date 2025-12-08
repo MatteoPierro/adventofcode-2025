@@ -51,7 +51,6 @@ fn find_largest_circuit(input: &str) -> usize {
 
     let mut circuits: Vec<RefCell<HashSet<Position>>> = vec![];
     let mut ordered_pair_iter = ordered_pairs.iter();
-    let mut connections_made = 0;
     let mut last_used_pair = None;
     while !(circuits.len() == 1 && circuits[0].borrow().len() == junctors) {
         let pair = ordered_pair_iter.next().unwrap();
@@ -79,11 +78,8 @@ fn find_largest_circuit(input: &str) -> usize {
                 circuit.borrow_mut().insert(second);
             }
             2 => {
-                println!("connecting two circuits");
                 let circuit1 = circuits_to_connect[0].clone();
-                println!("circuit1: {:?}", circuit1.borrow());
                 let circuit2 = circuits_to_connect[1].clone();
-                println!("circuit2: {:?}", circuit2.borrow());
                 let circuit1_position = circuits
                     .iter()
                     .position(|c| c.borrow().eq(&circuits_to_connect[0].borrow()))
@@ -100,10 +96,6 @@ fn find_largest_circuit(input: &str) -> usize {
                     circuits.remove(circuit1_position - 1);
                 }
 
-                println!("circuits after removes");
-                circuits
-                    .iter()
-                    .for_each(|circuit| println!("{:?}", circuit.borrow()));
                 circuit1
                     .borrow_mut()
                     .extend(circuit2.borrow().iter().cloned());
@@ -113,18 +105,6 @@ fn find_largest_circuit(input: &str) -> usize {
             }
             _ => panic!("no more than 2"),
         }
-
-        connections_made += 1;
-        println!("--------------");
-        println!(
-            "connection {connections_made} number of circuits: {}",
-            circuits.len()
-        );
-        println!("path between {:?} and {:?}", first, second);
-        circuits
-            .iter()
-            .for_each(|circuit| println!("{:?}", circuit.borrow()));
-        println!("--------------");
     }
 
     let last_pair = last_used_pair.unwrap();
@@ -156,8 +136,7 @@ fn find_multiply_first_three_larger_circuits(input: &str, connections: i32) -> u
             })
             .by_ref()
             .collect();
-        let len = circuits_to_connect.len();
-        match len {
+        match circuits_to_connect.len() {
             0 => {
                 let mut new_circuit = HashSet::new();
                 new_circuit.insert(first);
@@ -170,11 +149,8 @@ fn find_multiply_first_three_larger_circuits(input: &str, connections: i32) -> u
                 circuit.borrow_mut().insert(second);
             }
             2 => {
-                println!("connecting two circuits");
                 let circuit1 = circuits_to_connect[0].clone();
-                println!("circuit1: {:?}", circuit1.borrow());
                 let circuit2 = circuits_to_connect[1].clone();
-                println!("circuit2: {:?}", circuit2.borrow());
                 let circuit1_position = circuits
                     .iter()
                     .position(|c| c.borrow().eq(&circuits_to_connect[0].borrow()))
@@ -191,10 +167,6 @@ fn find_multiply_first_three_larger_circuits(input: &str, connections: i32) -> u
                     circuits.remove(circuit1_position - 1);
                 }
 
-                println!("circuits after removes");
-                circuits
-                    .iter()
-                    .for_each(|circuit| println!("{:?}", circuit.borrow()));
                 circuit1
                     .borrow_mut()
                     .extend(circuit2.borrow().iter().cloned());
@@ -206,16 +178,6 @@ fn find_multiply_first_three_larger_circuits(input: &str, connections: i32) -> u
         }
 
         connections_made += 1;
-        println!("--------------");
-        println!(
-            "connection {connections_made} number of circuits: {}",
-            circuits.len()
-        );
-        println!("path between {:?} and {:?}", first, second);
-        circuits
-            .iter()
-            .for_each(|circuit| println!("{:?}", circuit.borrow()));
-        println!("--------------");
     }
 
     circuits.sort_by_key(|c| c.borrow().len() as isize * -1);
