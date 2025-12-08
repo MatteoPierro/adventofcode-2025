@@ -7,3 +7,4 @@
 - [Day 5: Cafeteria](./src/day5.rs)
 - [Day 6: Trash Compactor](./src/day6.rs)
 - [Day 7: Laboratories](./src/day7.rs)
+- [Day 8: Playground](./src/day8.rs)
