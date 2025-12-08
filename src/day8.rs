@@ -1,11 +1,10 @@
 use adventofcode_2025::read_input_from_file;
 use itertools::Itertools;
-use std::cell::RefCell;
 use std::collections::HashSet;
 
 #[cfg(test)]
 mod test {
-    use crate::{find_largest_circuit, find_multiply_first_three_larger_circuits};
+    use crate::connect_junctions;
     use indoc::indoc;
 
     #[test]
@@ -32,13 +31,14 @@ mod test {
         984,92,344
         425,690,689"};
 
-        assert_eq!(find_multiply_first_three_larger_circuits(input, 10), 40);
-        assert_eq!(find_largest_circuit(input), 25272)
+        let (first_three_larger_circuits, largest_circuit) = connect_junctions(input, 10);
+        assert_eq!(first_three_larger_circuits, 40);
+        assert_eq!(largest_circuit, 25272)
     }
 }
 
-fn find_largest_circuit(input: &str) -> usize {
-    let junctors = input.lines().count();
+fn connect_junctions(input: &str, connections: i32) -> (usize, usize) {
+    let junctions = input.lines().count();
     let ordered_pairs: Vec<_> = input
         .lines()
         .map(|line| {
@@ -49,141 +49,53 @@ fn find_largest_circuit(input: &str) -> usize {
         .sorted_by(sorter)
         .collect();
 
-    let mut circuits: Vec<RefCell<HashSet<Position>>> = vec![];
+    let mut circuits: Vec<HashSet<Position>> = vec![];
     let mut ordered_pair_iter = ordered_pairs.iter();
     let mut last_used_pair = None;
-    while !(circuits.len() == 1 && circuits[0].borrow().len() == junctors) {
+    let mut used_connections = 0;
+    let mut first_three_larger_circuits = 0;
+    while !(circuits.len() == 1 && circuits[0].len() == junctions) {
         let pair = ordered_pair_iter.next().unwrap();
         last_used_pair = Some(pair);
         let first = pair[0];
         let second = pair[1];
-        let circuits_to_connect: Vec<_> = circuits
+        let circuits_to_connect_indexes: Vec<usize> = circuits
             .iter()
-            .filter(|circuit| {
-                circuit.borrow().contains(&first) || circuit.borrow().contains(&second)
+            .enumerate()
+            .filter_map(|(index, circuit)| {
+                if circuit.contains(&first) || circuit.contains(&second) {
+                    Some(index)
+                } else {
+                    None
+                }
             })
-            .by_ref()
             .collect();
-        let len = circuits_to_connect.len();
-        match len {
+        match circuits_to_connect_indexes.len() {
             0 => {
-                let mut new_circuit = HashSet::new();
-                new_circuit.insert(first);
-                new_circuit.insert(second);
-                circuits.push(RefCell::new(new_circuit));
+                circuits.push(HashSet::from([first, second]));
             }
             1 => {
-                let circuit = &circuits_to_connect[0];
-                circuit.borrow_mut().insert(first);
-                circuit.borrow_mut().insert(second);
+                circuits[circuits_to_connect_indexes[0]].insert(first);
+                circuits[circuits_to_connect_indexes[0]].insert(second);
             }
             2 => {
-                let circuit1 = circuits_to_connect[0].clone();
-                let circuit2 = circuits_to_connect[1].clone();
-                let circuit1_position = circuits
-                    .iter()
-                    .position(|c| c.borrow().eq(&circuits_to_connect[0].borrow()))
-                    .unwrap();
-                let circuit2_position = circuits
-                    .iter()
-                    .position(|c| c.borrow().eq(&circuits_to_connect[1].borrow()))
-                    .unwrap();
-                if circuit1_position < circuit2_position {
-                    circuits.remove(circuit1_position);
-                    circuits.remove(circuit2_position - 1);
-                } else {
-                    circuits.remove(circuit2_position);
-                    circuits.remove(circuit1_position - 1);
-                }
-
-                circuit1
-                    .borrow_mut()
-                    .extend(circuit2.borrow().iter().cloned());
-                circuit1.borrow_mut().insert(first);
-                circuit1.borrow_mut().insert(second);
-                circuits.push(circuit1.clone());
+                let extension = circuits.remove(circuits_to_connect_indexes[1]);
+                circuits[circuits_to_connect_indexes[0]].extend(extension);
             }
             _ => panic!("no more than 2"),
+        }
+
+        used_connections += 1;
+        if used_connections == connections {
+            circuits.sort_by_key(|c| c.len() as isize * -1);
+            first_three_larger_circuits = circuits[0].len() * circuits[1].len() * circuits[2].len();
         }
     }
 
     let last_pair = last_used_pair.unwrap();
-    last_pair[0].0 * last_pair[1].0
+    let largest_circuit = last_pair[0].0 * last_pair[1].0;
+    (first_three_larger_circuits, largest_circuit)
 }
-
-fn find_multiply_first_three_larger_circuits(input: &str, connections: i32) -> usize {
-    let ordered_pairs: Vec<_> = input
-        .lines()
-        .map(|line| {
-            let coords: Vec<usize> = line.split(',').map(|s| s.parse().unwrap()).collect();
-            (coords[0], coords[1], coords[2])
-        })
-        .combinations(2)
-        .sorted_by(sorter)
-        .collect();
-
-    let mut circuits: Vec<RefCell<HashSet<Position>>> = vec![];
-    let mut ordered_pair_iter = ordered_pairs.iter();
-    let mut connections_made = 0;
-    while connections_made < connections {
-        let pair = ordered_pair_iter.next().unwrap();
-        let first = pair[0];
-        let second = pair[1];
-        let circuits_to_connect: Vec<_> = circuits
-            .iter()
-            .filter(|circuit| {
-                circuit.borrow().contains(&first) || circuit.borrow().contains(&second)
-            })
-            .by_ref()
-            .collect();
-        match circuits_to_connect.len() {
-            0 => {
-                let mut new_circuit = HashSet::new();
-                new_circuit.insert(first);
-                new_circuit.insert(second);
-                circuits.push(RefCell::new(new_circuit));
-            }
-            1 => {
-                let circuit = &circuits_to_connect[0];
-                circuit.borrow_mut().insert(first);
-                circuit.borrow_mut().insert(second);
-            }
-            2 => {
-                let circuit1 = circuits_to_connect[0].clone();
-                let circuit2 = circuits_to_connect[1].clone();
-                let circuit1_position = circuits
-                    .iter()
-                    .position(|c| c.borrow().eq(&circuits_to_connect[0].borrow()))
-                    .unwrap();
-                let circuit2_position = circuits
-                    .iter()
-                    .position(|c| c.borrow().eq(&circuits_to_connect[1].borrow()))
-                    .unwrap();
-                if circuit1_position < circuit2_position {
-                    circuits.remove(circuit1_position);
-                    circuits.remove(circuit2_position - 1);
-                } else {
-                    circuits.remove(circuit2_position);
-                    circuits.remove(circuit1_position - 1);
-                }
-
-                circuit1
-                    .borrow_mut()
-                    .extend(circuit2.borrow().iter().cloned());
-                circuit1.borrow_mut().insert(first);
-                circuit1.borrow_mut().insert(second);
-                circuits.push(circuit1.clone());
-            }
-            _ => panic!("no more than 2"),
-        }
-
-        connections_made += 1;
-    }
-
-    circuits.sort_by_key(|c| c.borrow().len() as isize * -1);
-    circuits[0].borrow().len() * circuits[1].borrow().len() * circuits[2].borrow().len()
-}
-
 fn sorter(a: &Vec<Position>, b: &Vec<Position>) -> std::cmp::Ordering {
     let dist_a = distance(a.first().unwrap(), a.last().unwrap());
     let dist_b = distance(b.first().unwrap(), b.last().unwrap());
@@ -201,9 +113,9 @@ type Position = (usize, usize, usize);
 
 fn main() {
     let input = read_input_from_file();
+    let (first_three_larger_circuits, largest_circuit) = connect_junctions(&input, 1000);
     println!(
         "Part 1: {}, Part 2: {}",
-        find_multiply_first_three_larger_circuits(&input, 1000),
-        find_largest_circuit(&input)
+        first_three_larger_circuits, largest_circuit
     );
 }
