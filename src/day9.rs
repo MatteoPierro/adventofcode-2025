@@ -5,7 +5,6 @@ use itertools::Itertools;
 mod tests {
     use super::*;
     use indoc::indoc;
-    use std::isize;
 
     #[test]
     fn test_example() {
@@ -50,12 +49,7 @@ fn calculate_max_area_within_polygon(input: &str) -> isize {
         let v1 = *combination[0];
         let v2 = *combination[1];
 
-        let min_x = v1.0.min(v2.0);
-        let max_x = v1.0.max(v2.0);
-        let min_y = v1.1.min(v2.1);
-        let max_y = v1.1.max(v2.1);
-
-        if is_edge_cross_rectangle(v1, v2, min_x, max_x, min_y, max_y) {
+        if is_crossing_an_edge(&edges, v1, v2) {
             continue;
         }
 
@@ -75,6 +69,25 @@ fn calculate_max_area_within_polygon(input: &str) -> isize {
     }
 
     max_area
+}
+
+fn is_crossing_an_edge(
+    edges: &Vec<&[(isize, isize)]>,
+    v1: (isize, isize),
+    v2: (isize, isize),
+) -> bool {
+    let min_x = v1.0.min(v2.0);
+    let max_x = v1.0.max(v2.0);
+    let min_y = v1.1.min(v2.1);
+    let max_y = v1.1.max(v2.1);
+
+    for edge in edges {
+        if is_edge_cross_rectangle(edge[0], edge[1], min_x, max_x, min_y, max_y) {
+            return true;
+        }
+    }
+
+    false
 }
 
 fn is_edge_cross_rectangle(
