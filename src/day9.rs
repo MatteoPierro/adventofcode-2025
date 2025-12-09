@@ -22,19 +22,6 @@ mod tests {
         assert_eq!(50, find_largest_area(input));
         assert_eq!(24, calculate_max_area_within_polygon(input));
     }
-
-    fn total_polygon_area(points: &[(isize, isize)]) -> f64 {
-        let mut total_area: f64 = 0.0;
-        for pairs in points.windows(2) {
-            let pair1 = pairs[0];
-            let pair2 = pairs[1];
-            total_area += 0.5 * (pair1.1 + pair2.1) as f64 * (pair1.0 - pair2.0) as f64;
-        }
-
-        let last = points.last().unwrap();
-        total_area += 0.5 * (last.1 + points[0].1) as f64 * (last.0 - points[0].0) as f64;
-        total_area
-    }
 }
 
 type Point = (isize, isize);
@@ -50,22 +37,25 @@ fn calculate_max_area_within_polygon(input: &str) -> isize {
         })
         .collect::<Vec<_>>();
 
+    let combinations = points.iter().combinations(2).collect::<Vec<_>>();
+
     let mut max_area = -1;
 
-    for i in 0..points.len() {
-        let v1 = points[i];
-        let v2 = points[(i + 1) % points.len()];
-        let v3 = points[(i + 2) % points.len()];
-        let v4 = vertexes(&vec![v1, v3])
+    for combination in combinations {
+        let v1 = *combination[0];
+        let v2 = *combination[1];
+        let other_vertexes: Vec<_> = vertexes(&vec![v1, v2])
             .into_iter()
-            .find(|v| *v != v1 && *v != v2 && *v != v3)
-            .unwrap();
-        if !is_point_in_poly(v4, &points) {
+            .filter(|v| *v != v1 && *v != v2)
+            .collect();
+
+        if other_vertexes.iter().any(|v| !is_point_in_poly(*v, &points)) {
             continue;
         }
 
-        max_area = area(&vec![v1, v3]).max(max_area);
+        max_area = area(&vec![v1, v2]).max(max_area);
     }
+    
     max_area
 }
 
