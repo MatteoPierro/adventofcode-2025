@@ -37,6 +37,11 @@ fn calculate_max_area_within_polygon(input: &str) -> isize {
         })
         .collect::<Vec<_>>();
 
+    let mut edges: Vec<_> = points.windows(2).collect();
+
+    let wrap = vec![points.last().unwrap().clone(), points[0]];
+    edges.push(&wrap);
+
     let combinations = points.iter().combinations(2).collect::<Vec<_>>();
 
     let mut max_area = -1;
@@ -44,19 +49,65 @@ fn calculate_max_area_within_polygon(input: &str) -> isize {
     for combination in combinations {
         let v1 = *combination[0];
         let v2 = *combination[1];
+
+        let min_x = v1.0.min(v2.0);
+        let max_x = v1.0.max(v2.0);
+        let min_y = v1.1.min(v2.1);
+        let max_y = v1.1.max(v2.1);
+
+        if is_edge_cross_rectangle(v1, v2, min_x, max_x, min_y, max_y) {
+            continue;
+        }
+
         let other_vertexes: Vec<_> = vertexes(&vec![v1, v2])
             .into_iter()
             .filter(|v| *v != v1 && *v != v2)
             .collect();
 
-        if other_vertexes.iter().any(|v| !is_point_in_poly(*v, &points)) {
+        if other_vertexes
+            .iter()
+            .any(|v| !is_point_in_poly(*v, &points))
+        {
             continue;
         }
 
         max_area = area(&vec![v1, v2]).max(max_area);
     }
-    
+
     max_area
+}
+
+fn is_edge_cross_rectangle(
+    p1: Point,
+    p2: Point,
+    x_min: isize,
+    x_max: isize,
+    y_min: isize,
+    y_max: isize,
+) -> bool {
+    if p1.0 == p2.0 {
+        let edge_x = p1.0;
+        let edge_min_y = p1.1.min(p2.1);
+        let edge_max_y = p1.1.max(p2.1);
+
+        if x_min < edge_x && edge_x < x_max {
+            if edge_min_y < y_max && edge_max_y > y_min {
+                return true;
+            }
+        }
+    } else {
+        let edge_y = p1.1;
+        let edge_x_min = p1.0.min(p2.0);
+        let edge_x_max = p1.0.max(p2.0);
+
+        if y_min < edge_y && edge_y < y_max {
+            if edge_x_min < x_max && edge_x_max > x_min {
+                return true;
+            }
+        }
+    }
+
+    false
 }
 
 fn is_point_in_poly(p: Point, poly: &[Point]) -> bool {
