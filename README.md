@@ -8,3 +8,4 @@
 - [Day 6: Trash Compactor](./src/day6.rs)
 - [Day 7: Laboratories](./src/day7.rs)
 - [Day 8: Playground](./src/day8.rs)
+- [Day 9: Movie Theater](./src/day9.rs)
