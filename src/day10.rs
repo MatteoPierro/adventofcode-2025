@@ -114,11 +114,9 @@ impl FromStr for Machine {
     type Err = String;
 
     fn from_str(line: &str) -> Result<Self, Self::Err> {
-        let parts: Vec<_> = line
-            .split(' ')
-            .map(|p| p.chars().collect::<Vec<_>>())
-            .collect();
-        let lights_diagram: Vec<LightState> = parts[0][1..parts[0].len() - 1]
+        let parts: Vec<_> = line.split(' ').collect();
+        let lights_diagram: Vec<LightState> = parts[0].chars().collect::<Vec<_>>()
+            [1..parts[0].len() - 1]
             .iter()
             .map(|c| match c {
                 '.' => LightState::Off,
@@ -129,17 +127,25 @@ impl FromStr for Machine {
 
         let buttons: Vec<_> = parts[1..parts.len() - 1]
             .into_iter()
-            .map(|b| {
-                b[1..b.len() - 1]
-                    .iter()
-                    .filter(|&d| d != &',')
-                    .map(|d| d.to_digit(10).unwrap() as usize)
+            .map(|&b| {
+                let b = b.replace("(", "").replace(")", "");
+                b.split(",")
+                    .map(|c| c.parse::<usize>().unwrap())
                     .collect::<Vec<usize>>()
             })
             .collect();
+        let joltage_levels = parts
+            .last()
+            .unwrap()
+            .replace("{", "")
+            .replace("}", "")
+            .split(",")
+            .map(|c| c.parse::<usize>().unwrap())
+            .collect::<Vec<_>>();
         Ok(Self {
             lights_diagram,
             buttons,
+            joltage_levels,
         })
     }
 }
@@ -148,6 +154,7 @@ impl FromStr for Machine {
 struct Machine {
     lights_diagram: Vec<LightState>,
     buttons: Vec<Vec<usize>>,
+    joltage_levels: Vec<usize>,
 }
 
 fn main() {
