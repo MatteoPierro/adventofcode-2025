@@ -6,7 +6,7 @@ use std::str::FromStr;
 
 #[cfg(test)]
 mod tests {
-    use crate::find_fewest_presses;
+    use crate::{Machine, find_fewest_presses, find_fewest_presses_machine_for_joltage_level};
     use indoc::indoc;
 
     #[test]
@@ -17,7 +17,75 @@ mod tests {
             [.###.#] (0,1,2,3,4) (0,3,4) (0,1,2,4,5) (1,2) {10,11,11,5,10,5}"};
 
         assert_eq!(find_fewest_presses(input), 7);
+
+        let machines: Vec<Machine> = input.lines().map(|l| l.parse().unwrap()).collect();
+        assert_eq!(
+            find_fewest_presses_machine_for_joltage_level(&machines[0]),
+            10
+        );
+        assert_eq!(
+            find_fewest_presses_machine_for_joltage_level(&machines[1]),
+            12
+        );
+        assert_eq!(
+            find_fewest_presses_machine_for_joltage_level(&machines[2]),
+            11
+        );
     }
+}
+
+fn find_fewest_presses_for_joltage_level(input: &str) -> usize {
+    let machines: Vec<Machine> = input.lines().map(|l| l.parse().unwrap()).collect();
+    let fewest_presses_for_machine: Vec<usize> = machines
+        .iter()
+        .map(|machine| find_fewest_presses_machine_for_joltage_level(machine))
+        .collect();
+    fewest_presses_for_machine.iter().sum::<usize>()
+}
+
+fn find_fewest_presses_machine_for_joltage_level(machine: &Machine) -> usize {
+    let target = &machine.joltage_levels;
+    let initial_state = target.iter().map(|_| 0).collect::<Vec<_>>();
+    let mut heap = BinaryHeap::new();
+    heap.push(JoltageState {
+        buttons_pressed: 0,
+        state: initial_state.clone(),
+    });
+    let mut visited: HashSet<Vec<usize>> = HashSet::new();
+    let mut result = usize::MAX;
+    while let Some(JoltageState {
+        buttons_pressed,
+        state,
+    }) = heap.pop()
+    {
+        if visited.iter().contains(&state) {
+            continue;
+        }
+        if &state == target {
+            result = buttons_pressed;
+            break;
+        }
+
+        if state
+            .iter()
+            .enumerate()
+            .any(|(i, &level)| level > target[i])
+        {
+            continue;
+        }
+        for button in machine.buttons.iter() {
+            let mut new_state = state.clone();
+            for &i in button {
+                new_state[i] += 1;
+            }
+            heap.push(JoltageState {
+                buttons_pressed: buttons_pressed + 1,
+                state: new_state,
+            });
+        }
+        visited.insert(state.clone());
+    }
+    result
 }
 
 fn find_fewest_presses(input: &str) -> usize {
@@ -26,8 +94,7 @@ fn find_fewest_presses(input: &str) -> usize {
         .iter()
         .map(|machine| find_fewest_presses_for_a_machine(machine))
         .collect();
-    let fewest_presses = fewest_presses_for_machine.iter().sum::<usize>();
-    fewest_presses
+    fewest_presses_for_machine.iter().sum::<usize>()
 }
 
 fn find_fewest_presses_for_a_machine(machine: &Machine) -> usize {
@@ -65,6 +132,24 @@ fn find_fewest_presses_for_a_machine(machine: &Machine) -> usize {
         visited.insert(state.clone());
     }
     result
+}
+
+#[derive(Clone, Eq, PartialEq)]
+struct JoltageState {
+    buttons_pressed: usize,
+    state: Vec<usize>,
+}
+
+impl Ord for JoltageState {
+    fn cmp(&self, other: &Self) -> Ordering {
+        other.buttons_pressed.cmp(&self.buttons_pressed)
+    }
+}
+
+impl PartialOrd for JoltageState {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
 }
 
 #[derive(Clone, Eq, PartialEq)]
@@ -160,5 +245,9 @@ struct Machine {
 fn main() {
     let input = read_input_from_file();
 
-    println!("The answer to part 1 is {}", find_fewest_presses(&input));
+    println!(
+        "part 1:  {}, part 2: {}",
+        find_fewest_presses(&input),
+        find_fewest_presses_for_joltage_level(&input)
+    );
 }
