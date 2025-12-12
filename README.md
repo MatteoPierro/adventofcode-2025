@@ -9,3 +9,6 @@
 - [Day 7: Laboratories](./src/day7.rs)
 - [Day 8: Playground](./src/day8.rs)
 - [Day 9: Movie Theater](./src/day9.rs)
+- [Day 10: Factory](./src/day10.rs)
+  - part 2 not yet implemented
+- [Day 11: Reactor](./src/day11.rs)
