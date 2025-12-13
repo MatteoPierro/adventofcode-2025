@@ -2,7 +2,10 @@ use adventofcode_2025::read_input_from_file;
 use itertools::Itertools;
 use std::cmp::Ordering;
 use std::collections::{BinaryHeap, HashSet};
+use std::fmt::Display;
 use std::str::FromStr;
+use z3::Optimize;
+use z3::ast::Int;
 
 #[cfg(test)]
 mod tests {
@@ -36,56 +39,48 @@ mod tests {
 
 fn find_fewest_presses_for_joltage_level(input: &str) -> usize {
     let machines: Vec<Machine> = input.lines().map(|l| l.parse().unwrap()).collect();
-    let fewest_presses_for_machine: Vec<usize> = machines
+    machines
         .iter()
         .map(|machine| find_fewest_presses_machine_for_joltage_level(machine))
-        .collect();
-    fewest_presses_for_machine.iter().sum::<usize>()
+        .sum::<usize>()
 }
 
 fn find_fewest_presses_machine_for_joltage_level(machine: &Machine) -> usize {
-    let target = &machine.joltage_levels;
-    let initial_state = target.iter().map(|_| 0).collect::<Vec<_>>();
-    let mut heap = BinaryHeap::new();
-    heap.push(JoltageState {
-        buttons_pressed: 0,
-        state: initial_state.clone(),
-    });
-    let mut visited: HashSet<Vec<usize>> = HashSet::new();
-    let mut result = usize::MAX;
-    while let Some(JoltageState {
-        buttons_pressed,
-        state,
-    }) = heap.pop()
-    {
-        if visited.iter().contains(&state) {
-            continue;
-        }
-        if &state == target {
-            result = buttons_pressed;
-            break;
-        }
+    let optimize = Optimize::new();
 
-        if state
-            .iter()
-            .enumerate()
-            .any(|(i, &level)| level > target[i])
-        {
-            continue;
-        }
-        for button in machine.buttons.iter() {
-            let mut new_state = state.clone();
-            for &i in button {
-                new_state[i] += 1;
-            }
-            heap.push(JoltageState {
-                buttons_pressed: buttons_pressed + 1,
-                state: new_state,
-            });
-        }
-        visited.insert(state.clone());
+    let buttons_interactions: Vec<Int> = (0..machine.buttons.len())
+        .map(|_| Int::fresh_const("button_"))
+        .collect();
+
+    for (joltage_index, jolgate_value) in machine.joltage_levels.iter().enumerate() {
+        optimize.assert(
+            &buttons_interactions
+                .iter()
+                .enumerate()
+                .filter(|(button_index, _)| machine.buttons[*button_index].contains(&joltage_index))
+                .map(|(_, interaction)| interaction)
+                .sum::<Int>()
+                .eq(*jolgate_value as i32),
+        );
     }
-    result
+
+    let total_presses = buttons_interactions.iter().sum::<Int>();
+    optimize.minimize(&total_presses);
+
+    let _ = optimize.check(
+        &buttons_interactions
+            .iter()
+            .map(|i| i.ge(0))
+            .collect::<Vec<_>>(),
+    );
+
+    optimize
+        .get_model()
+        .expect("model")
+        .eval(&total_presses, true)
+        .expect("eval")
+        .as_u64()
+        .expect("i64") as usize
 }
 
 fn find_fewest_presses(input: &str) -> usize {
@@ -135,24 +130,6 @@ fn find_fewest_presses_for_a_machine(machine: &Machine) -> usize {
 }
 
 #[derive(Clone, Eq, PartialEq)]
-struct JoltageState {
-    buttons_pressed: usize,
-    state: Vec<usize>,
-}
-
-impl Ord for JoltageState {
-    fn cmp(&self, other: &Self) -> Ordering {
-        other.buttons_pressed.cmp(&self.buttons_pressed)
-    }
-}
-
-impl PartialOrd for JoltageState {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
-#[derive(Clone, Eq, PartialEq)]
 struct State {
     buttons_pressed: usize,
     state: Vec<LightState>,
@@ -170,13 +147,14 @@ impl PartialOrd for State {
     }
 }
 
-impl ToString for LightState {
-    fn to_string(&self) -> String {
-        match self {
+impl Display for LightState {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let str = match self {
             LightState::On => "#",
             LightState::Off => ".",
         }
-        .to_string()
+        .to_string();
+        write!(f, "{}", str)
     }
 }
 
@@ -246,7 +224,7 @@ fn main() {
     let input = read_input_from_file();
 
     println!(
-        "part 1:  {}, part 2: {}",
+        "part 1: {}, part 2: {}",
         find_fewest_presses(&input),
         find_fewest_presses_for_joltage_level(&input)
     );
