@@ -11,3 +11,4 @@
 - [Day 9: Movie Theater](./src/day9.rs)
 - [Day 10: Factory](./src/day10.rs)
 - [Day 11: Reactor](./src/day11.rs)
+- [Day 12: Christmas Tree Farm](./src/day12.rs)
